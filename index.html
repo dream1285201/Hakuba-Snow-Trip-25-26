@@ -8,11 +8,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="白馬滑雪">
-    
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" href="icon.jpg">
-
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJnameIjogIjI1LTI2IEhha3ViYSBTbm93IFRyaXAiLAogICJzaG9ydF9uYW1lIjogIueahOmmrOa7kembqiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZTBmMmZlIiwKICAidGhlbWVfY29sb3IiOiAiIzAyODRjNyIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImljb24uanBnIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9qcGVnIgogICAgfQogIF0KfQ==">
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -27,7 +24,6 @@
             min-height: 100vh;
             color: #334155;
             -webkit-tap-highlight-color: transparent;
-            /* 避免手機瀏覽器下拉重新整理，增加 App 感 */
             overscroll-behavior-y: contain;
         }
 
@@ -60,15 +56,24 @@
             color: white;
         }
 
-        .pdf-btn {
-            background: rgba(2, 132, 199, 0.08);
-            color: #0284c7;
-            border: 1px solid rgba(2, 132, 199, 0.2);
+        /* PDF 預覽層 */
+        .pdf-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 動畫 */
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        .pdf-header {
+            height: 60px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -97,30 +102,13 @@
                          @click="selectedDayIndex = index"
                          class="flex-shrink-0 text-center cursor-pointer transition-all duration-300"
                          :class="selectedDayIndex === index ? 'text-sky-600 scale-110' : 'text-slate-400'">
-                        <div class="text-[10px] font-bold tracking-tighter opacity-80 uppercase">Day {{index + 1}}</div>
+                        <div class="text-[10px] font-bold opacity-80 uppercase">Day {{index + 1}}</div>
                         <div class="text-xl font-bold">{{day.date.split(' ')[1]}}</div>
-                    </div>
-                </div>
-
-                <div class="glass-card rounded-2xl p-4 mb-8 flex items-center justify-between border-blue-50">
-                    <div class="flex items-center">
-                        <div class="bg-sky-100 p-2 rounded-xl mr-3">
-                            <i data-lucide="cloud-snow" class="text-sky-500 w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs text-slate-400 font-medium">白馬村預報</div>
-                            <div class="font-bold text-slate-700">局部降雪</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold text-sky-600">-3°C</div>
-                        <div class="text-[10px] text-slate-400 font-bold uppercase">Feels like -7°C</div>
                     </div>
                 </div>
 
                 <div class="space-y-6">
                     <div v-for="(item, idx) in currentDay.events" :key="idx">
-                        
                         <div v-if="item.travelTime && item.type !== 'flight'" class="flex items-center justify-center my-5">
                             <div class="h-[1px] bg-slate-200 flex-grow"></div>
                             <div class="mx-3 flex items-center space-x-1 text-slate-400 text-[10px] font-bold tracking-widest bg-slate-100 px-3 py-1 rounded-full uppercase">
@@ -130,54 +118,39 @@
                             <div class="h-[1px] bg-slate-200 flex-grow"></div>
                         </div>
 
-                        <div v-if="item.type === 'flight'" class="flight-card rounded-2xl p-6 shadow-xl relative overflow-hidden mb-4">
-                            <i data-lucide="plane" class="absolute -right-6 -top-6 w-32 h-32 opacity-10"></i>
-                            <div class="flex justify-between items-center mb-6 relative z-10">
-                                <span class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">{{item.label}}</span>
-                                <span class="font-bold text-sm tracking-widest">{{item.flightNo}}</span>
-                            </div>
-                            <div class="flex justify-between items-center relative z-10">
-                                <div class="text-center">
-                                    <div class="text-3xl font-bold">{{item.from}}</div>
-                                    <div class="text-xs opacity-70 mt-1 font-medium">{{item.depTime}}</div>
-                                </div>
-                                <div class="flex flex-col items-center flex-grow px-4">
-                                    <div class="w-full h-[1px] bg-white/30 relative">
-                                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-500 rounded-full p-1">
-                                            <i data-lucide="chevron-right" class="w-2 h-2"></i>
-                                        </div>
-                                    </div>
-                                    <div class="text-[10px] opacity-60 mt-1">{{item.duration}}</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-3xl font-bold">{{item.to}}</div>
-                                    <div class="text-xs opacity-70 mt-1 font-medium">{{item.arrTime}}</div>
-                                </div>
-                            </div>
-                        </div>
+                        <flight-card v-if="item.type === 'flight'" :flight="item"></flight-card>
 
-                        <div v-else class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-sky-400 hover:shadow-md transition-shadow">
+                        <div v-else class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-sky-400">
                             <div class="flex justify-between items-start mb-3">
                                 <div @click="openNav(item.mapUrl)" class="flex-grow cursor-pointer">
-                                    <h3 class="font-bold text-lg text-slate-800 leading-tight">{{item.name}}</h3>
+                                    <h3 class="font-bold text-lg text-slate-800">{{item.name}}</h3>
                                     <div class="flex items-center text-sky-500 text-[10px] font-bold mt-1 uppercase tracking-wider">
                                         <i data-lucide="navigation" class="w-3 h-3 mr-1"></i> 點擊導航
                                     </div>
                                 </div>
-                                <button v-if="item.pdf" @click.stop="openPdf(item.pdf)" 
-                                        class="pdf-btn p-2.5 rounded-xl flex flex-col items-center active:scale-95 transition-transform">
+                                <button v-if="item.pdf" @click="openPdfViewer(item.pdf, item.name)" 
+                                        class="bg-sky-50 text-sky-600 p-2.5 rounded-xl flex flex-col items-center">
                                     <i data-lucide="map" class="w-5 h-5"></i>
-                                    <span class="text-[8px] font-bold mt-1">MAP</span>
+                                    <span class="text-[8px] font-bold mt-1">地圖</span>
                                 </button>
                             </div>
-                            <p class="text-sm text-slate-500 leading-relaxed">{{item.desc}}</p>
+                            <p class="text-sm text-slate-500">{{item.desc}}</p>
                         </div>
-
                     </div>
                 </div>
             </div>
 
             <div v-if="currentTab === 'info'" class="space-y-8">
+                <section>
+                    <h2 class="text-sm font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center">
+                        <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 航班概覽
+                    </h2>
+                    <div class="space-y-4">
+                        <flight-card :flight="flightInfo.dep"></flight-card>
+                        <flight-card :flight="flightInfo.ret"></flight-card>
+                    </div>
+                </section>
+
                 <section>
                     <h2 class="text-sm font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center">
                         <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 住宿資訊
@@ -190,13 +163,13 @@
                         </div>
                     </div>
                 </section>
-                
+
                 <section>
                     <h2 class="text-sm font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center">
                         <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 雪場地圖清單
                     </h2>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div v-for="resort in resortsWithPdf" :key="resort.name" @click="openPdf(resort.pdf)"
+                    <div class="grid grid-cols-2 gap-3 pb-10">
+                        <div v-for="resort in resortsWithPdf" :key="resort.name" @click="openPdfViewer(resort.pdf, resort.name)"
                              class="glass-card p-4 rounded-xl flex items-center space-x-3 cursor-pointer">
                             <i data-lucide="file-text" class="text-sky-500 w-5 h-5"></i>
                             <span class="text-xs font-bold text-slate-700">{{resort.name}}</span>
@@ -206,45 +179,79 @@
             </div>
         </main>
 
-        <button v-if="currentTab === 'schedule'" 
-                class="fixed bottom-6 right-6 w-14 h-14 bg-sky-500 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-all z-50">
-            <i data-lucide="plus" class="w-8 h-8"></i>
-        </button>
+        <div v-if="pdfViewer.show" class="pdf-overlay animate-fade-in">
+            <div class="pdf-header">
+                <button @click="pdfViewer.show = false" class="mr-4 p-2">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <span class="font-bold text-sm truncate">{{pdfViewer.title}}</span>
+            </div>
+            <div class="flex-grow relative bg-slate-900">
+                <iframe :src="pdfViewer.url" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
         const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
 
+        // 建立航班卡片元件
+        const FlightCard = {
+            props: ['flight'],
+            template: `
+                <div class="flight-card rounded-2xl p-6 shadow-xl relative overflow-hidden mb-4">
+                    <i data-lucide="plane" class="absolute -right-6 -top-6 w-32 h-32 opacity-10"></i>
+                    <div class="flex justify-between items-center mb-6 relative z-10">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">{{flight.label}}</span>
+                        <span class="font-bold text-sm tracking-widest">{{flight.flightNo}}</span>
+                    </div>
+                    <div class="flex justify-between items-center relative z-10">
+                        <div class="text-center flex-1">
+                            <div class="text-3xl font-bold">{{flight.from}}</div>
+                            <div class="text-xs opacity-70 mt-1 font-medium">{{flight.depTime}}</div>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 px-2">
+                            <div class="w-full h-[1px] bg-white/30 relative">
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-500 rounded-full p-1">
+                                    <i data-lucide="chevron-right" class="w-2 h-2 text-white"></i>
+                                </div>
+                            </div>
+                            <div class="text-[10px] opacity-60 mt-1">{{flight.duration}}</div>
+                        </div>
+                        <div class="text-center flex-1">
+                            <div class="text-3xl font-bold">{{flight.to}}</div>
+                            <div class="text-xs opacity-70 mt-1 font-medium">{{flight.arrTime}}</div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            mounted() { lucide.createIcons(); }
+        };
+
         createApp({
+            components: { 'flight-card': FlightCard },
             setup() {
                 const currentTab = ref('schedule');
                 const selectedDayIndex = ref(0);
+                const pdfViewer = ref({ show: false, url: '', title: '' });
+
+                const flightInfo = {
+                    dep: { label: '去程航班 12/27', from: 'TPE', to: 'NRT', flightNo: 'CI104', depTime: '12:35', arrTime: '16:45', duration: '3h 10m' },
+                    ret: { label: '回程航班 01/06', from: 'NRT', to: 'TPE', flightNo: 'CI109', depTime: '19:30', arrTime: '22:35', duration: '4h 05m' }
+                };
 
                 const scheduleData = ref([
-                    {
-                        date: 'Day1 12/27',
-                        events: [
-                            { type: 'flight', label: '去程航班', from: 'TPE', to: 'NRT', flightNo: 'CI104', depTime: '12:35', arrTime: '16:45', duration: '3h 10m' },
-                            { name: '諏訪湖服務區', travelTime: '180', desc: '中途休息點。', mapUrl: 'https://maps.app.goo.gl/849jjQy7gyj5MkMn6' },
-                            { name: '民宿 雪ノ音', travelTime: '90', desc: '抵達休息。', mapUrl: 'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }
-                        ]
-                    },
+                    { date: 'Day1 12/27', events: [flightInfo.dep, { name: '諏訪湖服務區', travelTime: '180', desc: '中途休息點。', mapUrl: 'https://maps.app.goo.gl/849jjQy7gyj5MkMn6' }, { name: '民宿 雪ノ音', travelTime: '90', mapUrl: 'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }] },
                     { date: 'Day2 12/28', events: [{ name: '栂池高原滑雪場', desc: '寬闊雪道暖身。', mapUrl: 'https://maps.app.goo.gl/Pt9id5Dv9Lctw8dc9', pdf: '栂池高原 Tsugaike.pdf' }] },
                     { date: 'Day3 12/29', events: [{ name: '岩岳滑雪場', desc: '山頂觀景。', mapUrl: 'https://maps.app.goo.gl/WgA8uVeC2vtphE2r6', pdf: '岩岳 Iwatake.pdf' }] },
-                    { date: 'Day4 12/30', events: [{ name: '八方尾根滑雪場', desc: '挑戰經典斜面。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }] },
+                    { date: 'Day4 12/30', events: [{ name: '八方尾根滑雪場', desc: '挑戰斜面。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }] },
                     { date: 'Day5 12/31', events: [{ name: '八方尾根滑雪場', desc: '跨年滑雪。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }] },
                     { date: 'Day6 01/01', events: [{ name: '戶隱神社', travelTime: '60', desc: '新年參拜。', mapUrl: 'https://maps.app.goo.gl/CsefRdxMCQxMoagT9' }] },
                     { date: 'Day7 01/02', events: [{ name: '白馬 Cortina', desc: '粉雪天堂。', mapUrl: 'https://maps.app.goo.gl/aCUvXUJWiHbzy7gQA', pdf: 'Cortina.pdf' }] },
                     { date: 'Day8 01/03', events: [{ name: '白馬 Sanosaka', desc: '青木湖美景。', mapUrl: 'https://maps.app.goo.gl/95KNKrEuZ2o2TpAY6', pdf: 'Sanosaka.pdf' }] },
                     { date: 'Day9 01/04', events: [{ name: '白馬五竜滑雪場', desc: '最後衝刺。', mapUrl: 'https://maps.app.goo.gl/z3o2GnS7CmCjcQjf8', pdf: '五龍47 Goryu_47.pdf' }] },
-                    { date: 'Day10 01/05', events: [{ name: '松本城', travelTime: '70', desc: '國寶城巡禮。', mapUrl: 'https://maps.app.goo.gl/kdast41spPP7gX1k8' }] },
-                    {
-                        date: 'Day11 01/06',
-                        events: [
-                            { name: '舊輕井澤銀座通', desc: '採買伴手禮。', mapUrl: 'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' },
-                            { type: 'flight', label: '回程航班', from: 'NRT', to: 'TPE', flightNo: 'CI109', depTime: '19:30', arrTime: '22:35', duration: '4h 05m', travelTime: '180' }
-                        ]
-                    }
+                    { date: 'Day10 01/05', events: [{ name: '松本城', travelTime: '70', desc: '國寶巡禮。', mapUrl: 'https://maps.app.goo.gl/kdast41spPP7gX1k8' }] },
+                    { date: 'Day11 01/06', events: [{ name: '舊輕井澤', desc: '採買。', mapUrl: 'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' }, { ...flightInfo.ret, travelTime: '180' }] }
                 ]);
 
                 const resortsWithPdf = [
@@ -258,16 +265,21 @@
 
                 const currentDay = computed(() => scheduleData.value[selectedDayIndex.value]);
                 const openNav = (url) => { if (url) window.open(url, '_blank'); };
-                const openPdf = (pdf) => { if (pdf) window.open(pdf, '_blank'); };
+                
+                const openPdfViewer = (pdf, title) => {
+                    pdfViewer.value = { show: true, url: pdf, title: title };
+                    nextTick(() => lucide.createIcons());
+                };
 
                 onMounted(() => { lucide.createIcons(); });
                 watch([currentTab, selectedDayIndex], () => {
                     nextTick(() => lucide.createIcons());
                 });
 
-                return { currentTab, selectedDayIndex, scheduleData, currentDay, openNav, openPdf, resortsWithPdf };
+                return { currentTab, selectedDayIndex, scheduleData, currentDay, openNav, openPdfViewer, resortsWithPdf, flightInfo, pdfViewer };
             }
         }).mount('#app');
     </script>
 </body>
 </html>
+
