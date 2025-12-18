@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <link rel="manifest" href="manifest.json">
-
-    <link rel="apple-touch-icon" href="icon-512.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>25-26 Hakuba Snow Trip</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="白馬滑雪">
+    
+    <link rel="apple-touch-icon" href="icon.jpg">
+    <link rel="icon" href="icon.jpg">
+
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJnameIjogIjI1LTI2IEhha3ViYSBTbm93IFRyaXAiLAogICJzaG9ydF9uYW1lIjogIueahOmmrOa7kembqiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZTBmMmZlIiwKICAidGhlbWVfY29sb3IiOiAiIzAyODRjNyIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImljb24uanBnIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9qcGVnIgogICAgfQogIF0KfQ==">
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,6 +27,8 @@
             min-height: 100vh;
             color: #334155;
             -webkit-tap-highlight-color: transparent;
+            /* 避免手機瀏覽器下拉重新整理，增加 App 感 */
+            overscroll-behavior-y: contain;
         }
 
         .glass-card {
@@ -57,6 +65,10 @@
             color: #0284c7;
             border: 1px solid rgba(2, 132, 199, 0.2);
         }
+
+        /* 動畫 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
@@ -79,7 +91,7 @@
 
         <main class="content-container bg-[#f8fafc] px-5 pt-10 min-h-[70vh]">
             
-            <div v-if="currentTab === 'schedule'" class="animate-fade-in">
+            <div v-if="currentTab === 'schedule'">
                 <div class="flex overflow-x-auto no-scrollbar space-x-5 mb-8 pb-2">
                     <div v-for="(day, index) in scheduleData" :key="index"
                          @click="selectedDayIndex = index"
@@ -109,7 +121,7 @@
                 <div class="space-y-6">
                     <div v-for="(item, idx) in currentDay.events" :key="idx">
                         
-                        <div v-if="item.travelTime" class="flex items-center justify-center my-5">
+                        <div v-if="item.travelTime && item.type !== 'flight'" class="flex items-center justify-center my-5">
                             <div class="h-[1px] bg-slate-200 flex-grow"></div>
                             <div class="mx-3 flex items-center space-x-1 text-slate-400 text-[10px] font-bold tracking-widest bg-slate-100 px-3 py-1 rounded-full uppercase">
                                 <i data-lucide="car" class="w-3 h-3"></i>
@@ -118,7 +130,7 @@
                             <div class="h-[1px] bg-slate-200 flex-grow"></div>
                         </div>
 
-                        <div v-if="item.type === 'flight'" class="flight-card rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div v-if="item.type === 'flight'" class="flight-card rounded-2xl p-6 shadow-xl relative overflow-hidden mb-4">
                             <i data-lucide="plane" class="absolute -right-6 -top-6 w-32 h-32 opacity-10"></i>
                             <div class="flex justify-between items-center mb-6 relative z-10">
                                 <span class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">{{item.label}}</span>
@@ -130,7 +142,6 @@
                                     <div class="text-xs opacity-70 mt-1 font-medium">{{item.depTime}}</div>
                                 </div>
                                 <div class="flex flex-col items-center flex-grow px-4">
-                                    <div class="text-[10px] opacity-60 mb-1">Non-stop</div>
                                     <div class="w-full h-[1px] bg-white/30 relative">
                                         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-500 rounded-full p-1">
                                             <i data-lucide="chevron-right" class="w-2 h-2"></i>
@@ -159,14 +170,14 @@
                                     <span class="text-[8px] font-bold mt-1">MAP</span>
                                 </button>
                             </div>
-                            <p class="text-sm text-slate-500 leading-relaxed font-normal">{{item.desc}}</p>
+                            <p class="text-sm text-slate-500 leading-relaxed">{{item.desc}}</p>
                         </div>
 
                     </div>
                 </div>
             </div>
 
-            <div v-if="currentTab === 'info'" class="space-y-8 animate-fade-in">
+            <div v-if="currentTab === 'info'" class="space-y-8">
                 <section>
                     <h2 class="text-sm font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center">
                         <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 住宿資訊
@@ -182,7 +193,7 @@
                 
                 <section>
                     <h2 class="text-sm font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center">
-                        <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 其他雪場地圖
+                        <span class="w-8 h-[1px] bg-slate-300 mr-2"></span> 雪場地圖清單
                     </h2>
                     <div class="grid grid-cols-2 gap-3">
                         <div v-for="resort in resortsWithPdf" :key="resort.name" @click="openPdf(resort.pdf)"
@@ -213,69 +224,24 @@
                     {
                         date: 'Day1 12/27',
                         events: [
-                            { type: 'flight', label: '去程航班', from: 'TPE', to: 'NRT', flightNo: 'CI104', depTime: '12:35', arrTime: '16:45', duration: '3h 10m', name: '抵達東京 NRT' },
-                            { name: '諏訪湖服務區', travelTime: '180', desc: '中途休息點，取車後前往白馬必經之站。', mapUrl: 'https://maps.app.goo.gl/849jjQy7gyj5MkMn6' },
-                            { name: '民宿 雪ノ音', travelTime: '90', desc: '預計深夜抵達。', mapUrl: 'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }
+                            { type: 'flight', label: '去程航班', from: 'TPE', to: 'NRT', flightNo: 'CI104', depTime: '12:35', arrTime: '16:45', duration: '3h 10m' },
+                            { name: '諏訪湖服務區', travelTime: '180', desc: '中途休息點。', mapUrl: 'https://maps.app.goo.gl/849jjQy7gyj5MkMn6' },
+                            { name: '民宿 雪ノ音', travelTime: '90', desc: '抵達休息。', mapUrl: 'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }
                         ]
                     },
-                    {
-                        date: 'Day2 12/28',
-                        events: [
-                            { name: '栂池高原滑雪場', desc: 'Day 1: 寬闊緩坡暖身適應。', mapUrl: 'https://maps.app.goo.gl/Pt9id5Dv9Lctw8dc9', pdf: '栂池高原 Tsugaike.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day3 12/29',
-                        events: [
-                            { name: '岩岳滑雪場', desc: 'Day 2: 山頂觀景、下午可去溫泉。', mapUrl: 'https://maps.app.goo.gl/WgA8uVeC2vtphE2r6', pdf: '岩岳 Iwatake.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day4 12/30',
-                        events: [
-                            { name: '八方尾根滑雪場', desc: 'Day 3: 挑戰白馬最經典斜面。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day5 12/31',
-                        events: [
-                            { name: '八方尾根滑雪場', desc: 'Day 4: 指定日滑雪與跨年煙火。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day6 01/01',
-                        events: [
-                            { name: '戶隱神社', travelTime: '60', desc: '新年參拜與戶隱蕎麥麵。', mapUrl: 'https://maps.app.goo.gl/CsefRdxMCQxMoagT9' }
-                        ]
-                    },
-                    {
-                        date: 'Day7 01/02',
-                        events: [
-                            { name: '白馬 Cortina 國際滑雪場', desc: 'Day 5: 天然粉雪天堂。', mapUrl: 'https://maps.app.goo.gl/aCUvXUJWiHbzy7gQA', pdf: 'Cortina.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day8 01/03',
-                        events: [
-                            { name: '白馬 Sanosaka 滑雪場', desc: 'Day 6: 青木湖美景滑雪。', mapUrl: 'https://maps.app.goo.gl/95KNKrEuZ2o2TpAY6', pdf: 'Sanosaka.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day9 01/04',
-                        events: [
-                            { name: '白馬五竜滑雪場', desc: 'Day 7: 最後衝刺，可與 47 雪場連通。', mapUrl: 'https://maps.app.goo.gl/z3o2GnS7CmCjcQjf8', pdf: '五龍47 Goryu_47.pdf' }
-                        ]
-                    },
-                    {
-                        date: 'Day10 01/05',
-                        events: [
-                            { name: '松本城', travelTime: '70', desc: '國寶四之城巡禮。', mapUrl: 'https://maps.app.goo.gl/kdast41spPP7gX1k8' }
-                        ]
-                    },
+                    { date: 'Day2 12/28', events: [{ name: '栂池高原滑雪場', desc: '寬闊雪道暖身。', mapUrl: 'https://maps.app.goo.gl/Pt9id5Dv9Lctw8dc9', pdf: '栂池高原 Tsugaike.pdf' }] },
+                    { date: 'Day3 12/29', events: [{ name: '岩岳滑雪場', desc: '山頂觀景。', mapUrl: 'https://maps.app.goo.gl/WgA8uVeC2vtphE2r6', pdf: '岩岳 Iwatake.pdf' }] },
+                    { date: 'Day4 12/30', events: [{ name: '八方尾根滑雪場', desc: '挑戰經典斜面。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }] },
+                    { date: 'Day5 12/31', events: [{ name: '八方尾根滑雪場', desc: '跨年滑雪。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }] },
+                    { date: 'Day6 01/01', events: [{ name: '戶隱神社', travelTime: '60', desc: '新年參拜。', mapUrl: 'https://maps.app.goo.gl/CsefRdxMCQxMoagT9' }] },
+                    { date: 'Day7 01/02', events: [{ name: '白馬 Cortina', desc: '粉雪天堂。', mapUrl: 'https://maps.app.goo.gl/aCUvXUJWiHbzy7gQA', pdf: 'Cortina.pdf' }] },
+                    { date: 'Day8 01/03', events: [{ name: '白馬 Sanosaka', desc: '青木湖美景。', mapUrl: 'https://maps.app.goo.gl/95KNKrEuZ2o2TpAY6', pdf: 'Sanosaka.pdf' }] },
+                    { date: 'Day9 01/04', events: [{ name: '白馬五竜滑雪場', desc: '最後衝刺。', mapUrl: 'https://maps.app.goo.gl/z3o2GnS7CmCjcQjf8', pdf: '五龍47 Goryu_47.pdf' }] },
+                    { date: 'Day10 01/05', events: [{ name: '松本城', travelTime: '70', desc: '國寶城巡禮。', mapUrl: 'https://maps.app.goo.gl/kdast41spPP7gX1k8' }] },
                     {
                         date: 'Day11 01/06',
                         events: [
-                            { name: '舊輕井澤銀座通', travelTime: '15', desc: '回程採買伴手禮。', mapUrl: 'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' },
+                            { name: '舊輕井澤銀座通', desc: '採買伴手禮。', mapUrl: 'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' },
                             { type: 'flight', label: '回程航班', from: 'NRT', to: 'TPE', flightNo: 'CI109', depTime: '19:30', arrTime: '22:35', duration: '4h 05m', travelTime: '180' }
                         ]
                     }
@@ -291,7 +257,6 @@
                 ];
 
                 const currentDay = computed(() => scheduleData.value[selectedDayIndex.value]);
-
                 const openNav = (url) => { if (url) window.open(url, '_blank'); };
                 const openPdf = (pdf) => { if (pdf) window.open(pdf, '_blank'); };
 
@@ -306,5 +271,3 @@
     </script>
 </body>
 </html>
-
-
