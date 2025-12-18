@@ -2,198 +2,290 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>25-26 Hakuba Trip</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>25-26 Hakuba Snow Trip</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f7f9; color: #2c3e50; margin: 0; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .tab-active { color: #3b82f6; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .content-container { margin-top: -50px; border-top-left-radius: 40px; border-top-right-radius: 40px; position: relative; z-index: 10; background: #f3f7f9; min-height: 100vh; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         
-        .nav-btn {
-            background: #4285F4;
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 100%);
+            min-height: 100vh;
+            color: #334155;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 頁首圓弧銜接 */
+        .content-container {
+            margin-top: -40px;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tab-active {
+            color: #0284c7;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .flight-card {
+            background: linear-gradient(135deg, #075985 0%, #0284c7 100%);
             color: white;
-            padding: 10px 22px;
-            border-radius: 25px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
-            font-size: 14px;
+        }
+
+        .map-btn {
             transition: all 0.2s;
         }
-        .nav-btn:active { transform: scale(0.95); opacity: 0.9; }
-
-        .timeline-connector {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 4px 0;
-        }
-        .dot-line {
-            width: 2px;
-            height: 24px;
-            background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 4px, transparent 4px, transparent 8px);
-        }
+        .map-btn:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="pb-20">
-
-<div id="app">
-    <!-- Header -->
-    <header class="relative w-full h-[240px] overflow-hidden">
-        <img src="HAKUBA.jpg" alt="Hakuba" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1551641506-ee5bf4cb45f1?auto=format&fit=crop&q=80&w=1000'">
-        <div class="absolute bottom-16 right-6 flex space-x-3">
-            <button @click="currentTab = 'schedule'" :class="currentTab === 'schedule' ? 'tab-active' : 'bg-white/40'" class="p-3 rounded-full transition-all">
-                <i data-lucide="calendar" class="w-6 h-6"></i>
-            </button>
-            <button @click="currentTab = 'info'" :class="currentTab === 'info' ? 'tab-active' : 'bg-white/40'" class="p-3 rounded-full transition-all">
-                <i data-lucide="info" class="w-6 h-6"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="content-container px-5 pt-10">
+<body>
+    <div id="app" class="max-w-md mx-auto relative min-height-screen pb-20">
         
-        <!-- Tab: Schedule -->
-        <div v-if="currentTab === 'schedule'" class="animate-slide-up">
-            <!-- Date Slider -->
-            <div class="flex overflow-x-auto hide-scrollbar space-x-3 mb-8 px-1">
-                <div v-for="(day, index) in schedule" :key="index" 
-                     @click="selectedDayIndex = index"
-                     :class="selectedDayIndex === index ? 'bg-blue-600 text-white scale-105 shadow-lg' : 'bg-white text-gray-400'"
-                     class="flex-shrink-0 flex flex-col items-center justify-center w-20 h-24 rounded-3xl transition-all cursor-pointer">
-                    <span class="text-[10px] font-bold uppercase opacity-70">Day {{index + 1}}</span>
-                    <span class="text-xl font-black">{{day.date}}</span>
+        <header class="relative w-full h-[250px] overflow-hidden">
+            <img src="HAKUBA.jpg" alt="Hakuba" class="w-full h-full object-cover">
+            
+            <div class="absolute bottom-16 right-4 flex space-x-2">
+                <button @click="currentTab = 'schedule'" :class="{'tab-active': currentTab === 'schedule'}" 
+                        class="p-3 rounded-full glass-card text-slate-500 transition-all">
+                    <i data-lucide="map-pin"></i>
+                </button>
+                <button @click="currentTab = 'info'" :class="{'tab-active': currentTab === 'info'}" 
+                        class="p-3 rounded-full glass-card text-slate-500 transition-all">
+                    <i data-lucide="info"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="content-container bg-[#f8fafc] px-5 pt-8 min-h-[600px]">
+            
+            <div v-if="currentTab === 'schedule'">
+                <div class="flex overflow-x-auto no-scrollbar space-x-4 mb-6 pb-2">
+                    <div v-for="(day, index) in scheduleData" :key="index"
+                         @click="selectedDayIndex = index"
+                         class="flex-shrink-0 text-center cursor-pointer transition-all"
+                         :class="selectedDayIndex === index ? 'text-sky-600 scale-110' : 'text-slate-400'">
+                        <div class="text-xs font-bold uppercase">Day {{index + 1}}</div>
+                        <div class="text-lg font-medium">{{day.date}}</div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-4 mb-6 flex items-center justify-between border-blue-100">
+                    <div class="flex items-center">
+                        <i data-lucide="cloud-snow" class="text-sky-400 mr-3 w-8 h-8"></i>
+                        <div>
+                            <div class="text-sm text-slate-500">白馬村預報</div>
+                            <div class="font-bold text-slate-700">局部降雪</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-sky-600">-2°C</div>
+                        <div class="text-xs text-slate-400">體感 -6°C</div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div v-for="(item, idx) in currentDay.events" :key="idx">
+                        <div v-if="idx > 0" class="flex items-center justify-center my-4 text-slate-400 text-xs">
+                            <div class="border-t border-dashed border-slate-300 flex-grow mr-2"></div>
+                            <i data-lucide="car" class="w-4 h-4 mr-1"></i>
+                            <span>約 {{item.travelTime}} 分鐘</span>
+                            <div class="border-t border-dashed border-slate-300 flex-grow ml-2"></div>
+                        </div>
+
+                        <div v-if="item.type === 'flight'" class="flight-card rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                            <i data-lucide="plane" class="absolute -right-4 -top-4 w-24 h-24 opacity-10"></i>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="bg-white/20 px-3 py-1 rounded-full text-xs">航班資訊</span>
+                                <span class="font-bold">{{item.flightNo}}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">TPE</div>
+                                    <div class="text-xs opacity-80">{{item.depTime}}</div>
+                                </div>
+                                <i data-lucide="arrow-right" class="opacity-50"></i>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">NRT</div>
+                                    <div class="text-xs opacity-80">16:45</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-sky-400 relative" @click="openNav(item.mapUrl)">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-lg text-slate-800">{{item.name}}</h3>
+                                <button class="map-btn text-sky-500 bg-sky-50 p-2 rounded-lg">
+                                    <i data-lucide="navigation" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed">{{item.desc}}</p>
+                            <div v-if="item.pdf" class="mt-3 pt-3 border-t border-slate-100 flex items-center text-xs text-sky-600 font-medium">
+                                <i data-lucide="map" class="w-4 h-4 mr-1"></i>
+                                <span>點擊查看雪場地圖 (PDF)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- List of Items -->
-            <div class="space-y-0">
-                <div v-for="(item, idx) in schedule[selectedDayIndex].items" :key="item.id">
-                    
-                    <!-- 交通時間顯示 (僅在非第一項且有定義交通起點時顯示，或是依照您的邏輯在每個行程上端顯示) -->
-                    <div v-if="item.travelTime" class="timeline-connector">
-                        <div class="dot-line"></div>
-                        <div class="flex items-center bg-white border border-gray-100 px-4 py-2 rounded-full shadow-sm my-2">
-                            <i data-lucide="car" class="w-4 h-4 text-blue-500 mr-2"></i>
-                            <span class="text-xs font-bold text-gray-500">{{ item.travelTime }}</span>
-                        </div>
-                        <div class="dot-line"></div>
-                    </div>
-
-                    <!-- 行程卡片 -->
-                    <div class="glass-card rounded-[35px] p-7 shadow-sm mb-4">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="text-[10px] font-black text-blue-500 uppercase tracking-tighter">{{item.tag}}</span>
-                                <h4 class="font-bold text-xl text-gray-800 mt-1">{{item.title}}</h4>
+            <div v-if="currentTab === 'info'" class="space-y-6">
+                <section>
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i data-lucide="plane" class="mr-2 text-sky-500"></i> 航班資訊
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="glass-card rounded-xl p-4">
+                            <div class="text-xs text-slate-400 mb-1">去程 12/27</div>
+                            <div class="flex justify-between font-bold">
+                                <span>CI104</span>
+                                <span>TPE 12:35 → NRT 16:45</span>
                             </div>
-                            <!-- 導航按鈕 -->
-                            <a v-if="item.mapUrl" :href="item.mapUrl" target="_blank" class="nav-btn">
-                                <i data-lucide="navigation" class="w-4 h-4"></i> 導航
-                            </a>
                         </div>
-                        <p class="text-sm text-gray-500 leading-relaxed">{{item.note}}</p>
+                        <div class="glass-card rounded-xl p-4">
+                            <div class="text-xs text-slate-400 mb-1">回程 01/06</div>
+                            <div class="flex justify-between font-bold">
+                                <span>CI109</span>
+                                <span>NRT 19:30 → TPE 22:35</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i data-lucide="home" class="mr-2 text-sky-500"></i> 住宿資訊
+                    </h2>
+                    <div class="glass-card rounded-xl p-4" @click="openNav('https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7')">
+                        <div class="font-bold text-sky-700 mb-1">雪ノ音 (雪の音)</div>
+                        <div class="text-sm text-slate-500 mb-2">〒399-9211 長野県北安曇郡白馬村神城1102-1</div>
+                        <div class="text-sm text-slate-500">Tel: 080-6862-0930</div>
+                        <div class="mt-3 text-sky-600 text-xs font-bold flex items-center">
+                            <i data-lucide="external-link" class="w-3 h-3 mr-1"></i> 在地圖中開啟
+                        </div>
+                    </div>
+                </section>
             </div>
-        </div>
+        </main>
 
-        <!-- Tab: Info -->
-        <div v-if="currentTab === 'info'" class="space-y-10 animate-slide-up pb-10">
-            <!-- Lodging -->
-            <section>
-                <div class="flex items-center mb-6 px-2">
-                    <i data-lucide="home" class="w-6 h-6 mr-3 text-emerald-500"></i>
-                    <h2 class="text-2xl font-black">住宿資訊</h2>
-                </div>
-                <div class="glass-card rounded-[35px] p-8 border-l-8 border-emerald-400 shadow-lg">
-                    <h3 class="font-bold text-2xl mb-4">雪ノ音 (Yuki no Oto)</h3>
-                    <div class="space-y-4 text-sm text-gray-600">
-                        <div class="flex items-start">
-                            <i data-lucide="map-pin" class="w-5 h-5 mr-3 text-gray-300 shrink-0"></i>
-                            <p>〒399-9211 長野県北安曇郡白馬村神城1102-1</p>
-                        </div>
-                        <div class="flex items-center">
-                            <i data-lucide="phone" class="w-5 h-5 mr-3 text-gray-300"></i>
-                            <p>080-6862-0930</p>
-                        </div>
-                    </div>
-                    <a href="https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7" target="_blank" class="mt-8 nav-btn w-full justify-center py-5">
-                        <i data-lucide="navigation" class="w-5 h-5"></i> 導航至民宿
-                    </a>
-                </div>
-            </section>
+        <button v-if="currentTab === 'schedule'" 
+                class="fixed bottom-6 right-6 w-14 h-14 bg-sky-500 text-white rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-all z-50">
+            <i data-lucide="plus" class="w-8 h-8"></i>
+        </button>
+    </div>
 
-            <!-- Slope Maps -->
-            <section>
-                <div class="flex items-center mb-6 px-2">
-                    <i data-lucide="map" class="w-6 h-6 mr-3 text-orange-400"></i>
-                    <h2 class="text-2xl font-black">雪場地圖庫</h2>
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <div v-for="map in slopeMaps" class="glass-card p-5 rounded-3xl flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="bg-orange-50 p-2 rounded-xl mr-4 text-orange-400">
-                                <i data-lucide="map" class="w-5 h-5"></i>
-                            </div>
-                            <span class="font-bold text-gray-700">{{map.name}}</span>
-                        </div>
-                        <span class="text-[10px] text-gray-400 font-bold uppercase">Stored in Docs</span>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-</div>
+    <script>
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
-<script>
-const { createApp, ref, onMounted, updated } = Vue;
+        createApp({
+            setup() {
+                const currentTab = ref('schedule');
+                const selectedDayIndex = ref(0);
 
-createApp({
-    setup() {
-        const currentTab = ref('schedule');
-        const selectedDayIndex = ref(0);
+                const scheduleData = ref([
+                    {
+                        date: '12/27',
+                        events: [
+                            { type: 'flight', flightNo: 'CI104', depTime: '12:35', name: '抵達東京 NRT', desc: '機場取車(4WD+雪胎)，長途駕駛前往白馬。' },
+                            { name: '諏訪湖服務區', travelTime: '180', desc: '中途休息點，確保充足休息。', mapUrl: 'https://maps.app.goo.gl/849jjQy7gyj5MkMn6' },
+                            { name: '雪ノ音', travelTime: '90', desc: '預計深夜抵達民宿。', mapUrl: 'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }
+                        ]
+                    },
+                    {
+                        date: '12/28',
+                        events: [
+                            { name: '栂池高原滑雪場', travelTime: '15', desc: 'Day 1: 寬闊緩坡暖身適應。', mapUrl: 'https://maps.app.goo.gl/Pt9id5Dv9Lctw8dc9', pdf: '栂池高原 Tsugaike.pdf' }
+                        ]
+                    },
+                    {
+                        date: '12/29',
+                        events: [
+                            { name: '岩岳滑雪場', travelTime: '10', desc: 'Day 2: 山頂觀景與溫泉。', mapUrl: 'https://maps.app.goo.gl/WgA8uVeC2vtphE2r6', pdf: '岩岳 Iwatake.pdf' }
+                        ]
+                    },
+                    {
+                        date: '12/30',
+                        events: [
+                            { name: '八方尾根滑雪場', travelTime: '5', desc: 'Day 3: 挑戰高級雪道。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8', pdf: '八方尾根 Happo-One.pdf' }
+                        ]
+                    },
+                    {
+                        date: '12/31',
+                        events: [
+                            { name: '八方尾根滑雪場', travelTime: '5', desc: 'Day 4: 跨年滑雪與煙火。', mapUrl: 'https://maps.app.goo.gl/wdyAsnXxHfVe758k8' }
+                        ]
+                    },
+                    {
+                        date: '01/01',
+                        events: [
+                            { name: '戶隱神社', travelTime: '60', desc: '新年參拜：巨木林參拜與文化美食。', mapUrl: 'https://maps.app.goo.gl/CsefRdxMCQxMoagT9' }
+                        ]
+                    },
+                    {
+                        date: '01/02',
+                        events: [
+                            { name: '白馬 Cortina', travelTime: '25', desc: 'Day 5: 粉雪天堂與樹林。', mapUrl: 'https://maps.app.goo.gl/aCUvXUJWiHbzy7gQA', pdf: 'Cortina.pdf' }
+                        ]
+                    },
+                    {
+                        date: '01/03',
+                        events: [
+                            { name: '白馬 Sanosaka', travelTime: '20', desc: 'Day 6: 湖光山色滑雪。', mapUrl: 'https://maps.app.goo.gl/95KNKrEuZ2o2TpAY6', pdf: 'Sanosaka.pdf' }
+                        ]
+                    },
+                    {
+                        date: '01/04',
+                        events: [
+                            { name: '白馬五竜滑雪場', travelTime: '10', desc: 'Day 7: 最後衝刺。', mapUrl: 'https://maps.app.goo.gl/z3o2GnS7CmCjcQjf8', pdf: '五龍47 Goryu_47.pdf' }
+                        ]
+                    },
+                    {
+                        date: '01/05',
+                        events: [
+                            { name: '松本城', travelTime: '70', desc: '國寶巡禮，傍晚移動至輕井澤。', mapUrl: 'https://maps.app.goo.gl/kdast41spPP7gX1k8' }
+                        ]
+                    },
+                    {
+                        date: '01/06',
+                        events: [
+                            { name: '舊輕井澤銀座通', travelTime: '15', desc: '採買伴手禮。', mapUrl: 'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' },
+                            { name: '成田機場', travelTime: '180', desc: '準備返家。華航 CI109 19:30。', mapUrl: 'https://maps.app.goo.gl/GcmmR8Dh8XpsDe856' }
+                        ]
+                    }
+                ]);
 
-        const slopeMaps = [
-            { name: '栂池高原滑雪場' },
-            { name: '岩岳滑雪場' },
-            { name: '八方尾根滑雪場' },
-            { name: '五龍 & Hakuba 47' },
-            { name: '白馬 Cortina' },
-            { name: 'Sanosaka 滑雪場' }
-        ];
+                const currentDay = computed(() => scheduleData.value[selectedDayIndex.value]);
 
-        // 每日行程與導航連結，交通時間根據地點估算
-        const schedule = ref([
-            { date: '12/27', items: [{ id:1, title:'民宿 雪ノ音 Check-in', tag:'DAY 1 交通', travelTime: '成田機場 → 白馬 約 4h 30m', note:'首日長途駕車，建議在服務區稍作休息。', mapUrl:'https://maps.app.goo.gl/QCCSYTBMsZ1gu51J7' }] },
-            { date: '12/28', items: [{ id:2, title:'栂池高原滑雪場', tag:'DAY 2 滑雪', travelTime: '雪ノ音 → 栂池 約 15m', note:'白馬地區最寬闊緩坡，適合首日暖身。', mapUrl:'https://maps.app.goo.gl/Pt9id5Dv9Lctw8dc9' }] },
-            { date: '12/29', items: [{ id:3, title:'岩岳滑雪場', tag:'DAY 3 滑雪', travelTime: '雪ノ音 → 岩岳 約 12m', note:'景觀極佳，推薦前往山頂 HAKUBA MOUNTAIN HARBOR。', mapUrl:'https://maps.app.goo.gl/WgA8uVeC2vtphE2r6' }] },
-            { date: '12/30', items: [{ id:4, title:'八方尾根滑雪場', tag:'DAY 4 滑雪', travelTime: '雪ノ音 → 八方尾根 約 8m', note:'國際知名的競賽級雪場，挑戰垂直落差。', mapUrl:'https://maps.app.goo.gl/wdyAsnXxHfVe758k8' }] },
-            { date: '12/31', items: [{ id:5, title:'八方尾根滑雪場', tag:'DAY 5 滑雪', travelTime: '雪ノ音 → 八方尾根 約 8m', note:'跨年日滑雪，可關注村內煙火活動。', mapUrl:'https://maps.app.goo.gl/wdyAsnXxHfVe758k8' }] },
-            { date: '01/01', items: [{ id:6, title:'戶隱神社', tag:'DAY 6 文化', travelTime: '白馬 → 戶隱 約 1h 10m', note:'新年首禱，欣賞神聖的巨木參道。', mapUrl:'https://maps.app.goo.gl/CsefRdxMCQxMoagT9' }] },
-            { date: '01/02', items: [{ id:7, title:'白馬 Cortina 國際滑雪場', tag:'DAY 7 滑雪', travelTime: '雪ノ音 → Cortina 約 25m', note:'以優質粉雪著稱，適合樹林滑行愛好者。', mapUrl:'https://maps.app.goo.gl/aCUvXUJWiHbzy7gQA' }] },
-            { date: '01/03', items: [{ id:8, title:'白馬 Sanosaka 滑雪場', tag:'DAY 8 滑雪', travelTime: '雪ノ音 → Sanosaka 約 10m', note:'可以俯瞰青木湖的寧靜雪場。', mapUrl:'https://maps.app.goo.gl/95KNKrEuZ2o2TpAY6' }] },
-            { date: '01/04', items: [{ id:9, title:'白馬五竜滑雪場', tag:'DAY 9 滑雪', travelTime: '雪ノ音 → 五竜 約 5m', note:'與 Hakuba 47 共通，雪道變化豐富。', mapUrl:'https://maps.app.goo.gl/z3o2GnS7CmCjcQjf8' }] },
-            { date: '01/05', items: [{ id:10, title:'松本城', tag:'DAY 10 文化', travelTime: '白馬 → 松本 約 1h 20m', note:'參觀日本現存最古老的五重六階天守。', mapUrl:'https://maps.app.goo.gl/kdast41spPP7gX1k8' }] },
-            { date: '01/06', items: [{ id:11, title:'舊輕井澤銀座通', tag:'DAY 11 購物', travelTime: '白馬 → 輕井澤 約 2h', note:'最後的採買與午餐，準備前往機場返家。', mapUrl:'https://maps.app.goo.gl/UkAUa1N664H5HKbD7' }] }
-        ]);
+                const openNav = (url) => {
+                    if (url) window.location.href = url;
+                };
 
-        onMounted(() => { lucide.createIcons(); });
-        updated(() => { lucide.createIcons(); });
+                onMounted(() => {
+                    lucide.createIcons();
+                });
 
-        return { currentTab, selectedDayIndex, schedule, slopeMaps };
-    }
-}).mount('#app');
-</script>
+                // Re-render icons after tab switch or day change
+                Vue.watch([currentTab, selectedDayIndex], () => {
+                    nextTick(() => lucide.createIcons());
+                });
+
+                return { currentTab, selectedDayIndex, scheduleData, currentDay, openNav };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
+
